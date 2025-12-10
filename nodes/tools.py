@@ -1,10 +1,11 @@
 # nodes/tools.py
 import os
+import time
+import random
 import openrouteservice
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from geopy.geocoders import Nominatim
-# Ensure GuardrailOutcome is imported here
 from .models import ExtractedLocations, RankedAttractionsList, GuardrailOutcome
 
 # --- Load API Keys ---
@@ -13,31 +14,37 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 ORS_API_KEY = os.getenv("ORS_API_KEY")
 GEOAPIFY_API_KEY = os.getenv("GEOAPIFY_API_KEY")
 
-if not GOOGLE_API_KEY:
-    raise ValueError("GOOGLE_API_KEY not found...")
-if not ORS_API_KEY:
-    raise ValueError("ORS_API_KEY not found...")
-if not GEOAPIFY_API_KEY:
-    raise ValueError(
-        "GEOAPIFY_API_KEY not found. Please set it in your .env file.")
+# --- Robust LLM Wrapper ---
+# We wrap the LLM initialization to add automatic retries for Error 429
 
-# --- Initialize Base LLM ---
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash-lite",
-    google_api_key=GOOGLE_API_KEY,
-    temperature=0
-)
 
-# --- Structured LLMs ---
-# Node 1: Extractor
+class RateLimitAwareLLM:
+    def __init__(self, model_name, api_key):
+        self.llm = ChatGoogleGenerativeAI(
+            model=model_name,
+            google_api_key=api_key,
+            temperature=0,
+            max_retries=5,  # Built-in LangChain retry
+            request_timeout=60
+        )
+
+    def with_structured_output(self, schema):
+        return self.llm.with_structured_output(schema)
+
+    def invoke(self, *args, **kwargs):
+        return self.llm.invoke(*args, **kwargs)
+
+
+# Initialize the robust LLM
+_llm_wrapper = RateLimitAwareLLM("gemini-2.5-flash-lite", GOOGLE_API_KEY)
+
+# Use this wrapper for everything
+llm = _llm_wrapper.llm
 structured_llm = llm.with_structured_output(ExtractedLocations)
-
-# Node 5: Ranker
 ranking_llm = llm.with_structured_output(RankedAttractionsList)
-
-# Node 0: Guardrail (THIS WAS MISSING)
 guardrail_llm = llm.with_structured_output(GuardrailOutcome)
 
 # --- Other Tools ---
-geolocator = Nominatim(user_agent="ai_trip_planner_v1")
+# FIX: Use a unique user_agent to avoid blocking
+geolocator = Nominatim(user_agent="sri_lanka_trip_planner_api_v1")
 ors_client = openrouteservice.Client(key=ORS_API_KEY)
