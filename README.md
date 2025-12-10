@@ -1,6 +1,6 @@
 ---
 title: Sri Lanka Trip Planner API
-emoji: 🇱🇰
+emoji: 🌴
 colorFrom: blue
 colorTo: green
 sdk: docker
