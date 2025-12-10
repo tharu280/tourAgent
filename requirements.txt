@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+requests
+python-dotenv
+langgraph
+langchain-google-genai
+geopy
+openrouteservice
+pydantic
