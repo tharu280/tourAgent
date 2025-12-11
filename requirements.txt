@@ -3,7 +3,9 @@ uvicorn
 requests
 python-dotenv
 langgraph
-langchain-google-genai
+# Force newer versions for Flash model support
+langchain-google-genai>=1.0.6
+google-generativeai>=0.7.0
 geopy
 openrouteservice
 pydantic
