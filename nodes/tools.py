@@ -65,7 +65,7 @@ class RateLimitAwareLLM:
 # --- 3. Initialize Tools ---
 # CORRECT MODEL NAME: gemini-1.5-flash
 # (There is no 2.5 yet!)
-wrapper = RateLimitAwareLLM("gemini-1.5-flash", GOOGLE_API_KEY)
+wrapper = RateLimitAwareLLM("gemini-2.5-flash-lite", GOOGLE_API_KEY)
 
 llm = wrapper.robust_llm
 structured_llm = wrapper.with_structured_output(ExtractedLocations)
