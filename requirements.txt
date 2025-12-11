@@ -4,8 +4,8 @@ requests
 python-dotenv
 langgraph
 # Force newer versions for Flash model support
-langchain-google-genai>=1.0.6
-google-generativeai>=0.7.0
+langchain-google-genai
+google-generativeai
 geopy
 openrouteservice
 pydantic
